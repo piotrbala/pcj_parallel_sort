@@ -1,4 +1,6 @@
 
+import java.util.Arrays;
+
 import org.pcj.PCJ;
 
 
@@ -11,9 +13,7 @@ public class PcjStart {
      */
     private static String[] nodes(int threadCount) {
         String[] result = new String[threadCount];
-        for (int i = 0; i < result.length; ++i) {
-            result[i] = "localhost";
-        }
+        Arrays.fill(result, "localhost");
         return result;
     }
     
@@ -21,6 +21,6 @@ public class PcjStart {
 //        for (int i = 0; i < 10; ++i)
 //            PCJ.deploy(MergeSort.class, MergeSort.class, "nodes.txt");
         
-        PCJ.deploy(MergeSort.class, MergeSort.class, nodes(8));
+        PCJ.deploy(MergeSort.class, MergeSort.class, nodes(4));
     }
 }

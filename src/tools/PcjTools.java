@@ -27,20 +27,30 @@ public class PcjTools {
         return new TreeReduce<A, V>(function, defaultAccumulator, metaField);
     }
     
-    
+   
+    /**
+     * It returns class that can reduce data in threads. Complete result will be present in thread with id 0.
+     * It has to be used in all threads.
+     * @param function used to reduce data. It takes 2 args - accumulator from other thread and a value
+     * for calculations. It returns accumulator.
+     * @param <A> accumulator. It may be send to other threads.
+     * @param <V> value type. Data to reduce.
+     * @param defaultAccumulator it will be passed to function iff this thread does not have right neighbour
+     * @param metaField name of the field in the storage that will be used to store meta-data. It has to be A
+     * and has to be null. This field has to have the same name in each thread.
+     */
     public static <A extends Serializable, V> Reduce<A, V>
         prepareLineReduce(BiFunction<A, V, A> function, A defaultAccumulator, String metaField) {
     
         return new LineReduce<A, V>(function, defaultAccumulator, metaField);
     }
     
-    //TODO docs
     /**
      * It is waiting until field in given thread is in given condition
-     * @param thread
-     * @param field
-     * @param predicate
-     * @return 
+     * @param thread where the field is stored
+     * @param field to get
+     * @param predicate used to test field
+     * @return value of field when it satisfies the predicate
      */
     public static <T> T waitForOuter(int thread, String field, Predicate<T> predicate) {
         T tmp;
@@ -48,6 +58,10 @@ public class PcjTools {
         return tmp;
     }
     
+    /**
+     * Barrier on all given threads.
+     * @param threads to synchronize. It has to contain caller thread (PCJ.myId())
+     */
     public static void barrier(int... threads) {
         int myId = 0;
         while(threads[myId] != PCJ.myId()) {
@@ -79,11 +93,7 @@ public class PcjTools {
      * @return array of children of given thread
      */
     public static int[] getChildren(int thread, int threadCount) {
-        int number = 1;
-        while (thread > number) {
-            number = (number + 1) * 2 - 1;
-        }
-        number += (thread - (number / 2)) * 2;
+        int number = (thread + 1) * 2 - 1;
         
         if (number >= threadCount)
             return new int[0];
@@ -94,19 +104,13 @@ public class PcjTools {
     }
     
     /**
-     * 
+     * Calculates a parent of given thread in given context.
      * @param thread
      * @param threadCount
      * @return parent of thread in given context. Thread 0 has no parent so -1 will be returned.
      */
     public static int getParent(int thread, int threadCount) {
-        int number = 1;
-        while ((thread + 1) / 2 > number) {
-            number = (number + 1) * 2 - 1;
-        }
-        number -= ((number + 1) * 2 - thread) / 2;
-        
-        return number;
+        return (thread + 1) / 2 - 1;
     }
     
 }

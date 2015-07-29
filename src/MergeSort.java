@@ -12,7 +12,7 @@ import tools.PcjTools;
 public class MergeSort extends Storage implements StartPoint{
     
     public final static int SIZE = 3 * 16 * 5 * 100 * 1000;
-    
+//    public final static int SIZE = 3 * 4;
 
     @Shared
     private int[][] child1;
