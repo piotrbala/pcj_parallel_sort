@@ -21,6 +21,6 @@ public class PcjStart {
 //        for (int i = 0; i < 10; ++i)
 //            PCJ.deploy(MergeSort.class, MergeSort.class, "nodes.txt");
         
-        PCJ.deploy(OddEvenTranspositionSort.class, OddEvenTranspositionSort.class, nodes(4));
+        PCJ.deploy(MergeSort.class, MergeSort.class, nodes(4));
     }
 }

@@ -1,3 +1,7 @@
+import iterators.IntArrayIterator;
+import iterators.SimplifiedArrayIterator;
+import iterators.WaitingArrayIterator;
+
 import java.util.Arrays;
 import java.util.Random;
 
@@ -22,8 +26,6 @@ public class MergeSort extends Storage implements StartPoint{
     
     private int[] numbers;
     private Random r;
-    
-    private int[][] result; //only for 0 thread
     
     
     
@@ -63,38 +65,37 @@ public class MergeSort extends Storage implements StartPoint{
         int parent = PcjTools.getParent(PCJ.myId(), PCJ.threadCount());
 
         String parentFieldName = null;
-        if (PCJ.myId() == 0) {
-            result = new int[totalSize][];
-        }
-        else {
+        if (PCJ.myId() != 0) {
             parentFieldName = PcjTools.getChildren(parent, PCJ.threadCount())[0] == PCJ.myId() ?
                 "child1" : "child2";
             PCJ.put(parent, parentFieldName, new int[totalSize][]);
         }
         
-        
-        PCJ.waitFor("child1", size1);
-        PCJ.waitFor("child2", size2);
+        //no waiting for data. Iterators will wait when necessary
 
         //merging
-        IntArrayIterator it1 = new IntArrayIterator(child1, numbers.length);
-        IntArrayIterator it2 = new IntArrayIterator(child2, numbers.length);
-        IntArrayIterator it3 = new IntArrayIterator(new int[][]{numbers}, numbers.length);
+        IntArrayIterator it1 = new WaitingArrayIterator(child1, SIZE/PCJ.threadCount(), "child1");
+        it1.move();
+        IntArrayIterator it2 = new WaitingArrayIterator(child2, SIZE/PCJ.threadCount(), "child1");
+        it2.move();
+        IntArrayIterator it3 = new SimplifiedArrayIterator(numbers);
+        it3.move();
         IntArrayIterator smallest;
         
+        
+        int[] result = new int[numbers.length];
         for (int i = 0; i < totalSize; ++i) { 
-
-            int[] result = new int[numbers.length]; //can be skipped?
             for (int j = 0; j < numbers.length; ++j) {
-                smallest = it1.less(it2.less(it3));
+                smallest = it1.lesser(it2.lesser(it3));
                 result[j] = smallest.get();
                 smallest.move();
             }
             
             if (PCJ.myId() != 0)
                 PCJ.put(parent, parentFieldName, result, i);
-            else
-                this.result[i] = result;
+            /*else {
+                System.out.println(Arrays.toString(result));
+            }*/
         }
     }
     
@@ -121,9 +122,6 @@ public class MergeSort extends Storage implements StartPoint{
         }
         if (PCJ.myId() == 0) {
             System.out.println(min + " ns");
-            /*for (int[] a : result) {
-                System.out.println(Arrays.toString(a));
-            }*/
         }
     }
 }
