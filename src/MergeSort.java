@@ -15,9 +15,13 @@ import tools.PcjTools;
 
 public class MergeSort extends Storage implements StartPoint{
     
-    public final static int SIZE = 3 * 16 * 5 * 100 * 1000;
-//    public final static int SIZE = 3 * 4;
-
+    public final static int SEND_SIZE = 64_000;
+//    public final static int SEND_SIZE = 3;
+    
+    
+    public final static int SIZE = 3 * 16 * 15 * SEND_SIZE;
+//    public final static int SIZE = 8 * SEND_SIZE;
+    
     @Shared
     private int[][] child1;
     
@@ -60,7 +64,7 @@ public class MergeSort extends Storage implements StartPoint{
         int size1 = child1.length;
         int size2 = child2.length;
 
-        int totalSize = size1 + size2 + 1;
+        int totalSize = size1 + size2 + (SIZE / (PCJ.threadCount() * SEND_SIZE));
         
         int parent = PcjTools.getParent(PCJ.myId(), PCJ.threadCount());
 
@@ -74,23 +78,23 @@ public class MergeSort extends Storage implements StartPoint{
         //no waiting for data. Iterators will wait when necessary
 
         //merging
-        IntArrayIterator it1 = new WaitingArrayIterator(child1, SIZE/PCJ.threadCount(), "child1");
+        IntArrayIterator it1 = new WaitingArrayIterator(child1, SEND_SIZE, "child1");
         it1.move();
-        IntArrayIterator it2 = new WaitingArrayIterator(child2, SIZE/PCJ.threadCount(), "child1");
+        IntArrayIterator it2 = new WaitingArrayIterator(child2, SEND_SIZE, "child2");
         it2.move();
         IntArrayIterator it3 = new SimplifiedArrayIterator(numbers);
         it3.move();
         IntArrayIterator smallest;
         
         
-        int[] result = new int[numbers.length];
+        int[] result = new int[SEND_SIZE];
         for (int i = 0; i < totalSize; ++i) { 
-            for (int j = 0; j < numbers.length; ++j) {
+            for (int j = 0; j < result.length; ++j) {
                 smallest = it1.lesser(it2.lesser(it3));
                 result[j] = smallest.get();
                 smallest.move();
             }
-            
+
             if (PCJ.myId() != 0)
                 PCJ.put(parent, parentFieldName, result, i);
             /*else {

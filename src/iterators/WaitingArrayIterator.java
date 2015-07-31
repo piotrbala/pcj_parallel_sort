@@ -31,7 +31,7 @@ public class WaitingArrayIterator extends IntArrayIterator{
             isEnd = true;
             compare = a -> a;
             return;
-        }   
+        }
         while (array[outer] == null)
             PCJ.waitFor(fieldName);
     }
