@@ -5,6 +5,7 @@ import org.pcj.PCJ;
 
 import algorithms.NaiveMergeSort;
 import algorithms.OddEvenTranspositionSort;
+import algorithms.OddEvenTranspositionSortWithPartialData;
 
 
 public class PcjStart {
@@ -22,8 +23,8 @@ public class PcjStart {
     
     public static void main(String[] args) {
         //it will look for file "nodes.file" and read nodes configuration from there
-        PCJ.start(NaiveMergeSort.class, NaiveMergeSort.class);
+//        PCJ.start(NaiveMergeSort.class, NaiveMergeSort.class);
         
-//        PCJ.deploy(NaiveMergeSort.class, NaiveMergeSort.class, nodes(4));
+        PCJ.deploy(OddEvenTranspositionSort.class, OddEvenTranspositionSort.class, nodes(4));
     }
 }

@@ -4,13 +4,13 @@ import iterators.SimplifiedArrayIterator;
 import iterators.WaitingArrayIterator;
 
 import java.util.Arrays;
-import java.util.Random;
 
 import org.pcj.PCJ;
 import org.pcj.Shared;
 import org.pcj.StartPoint;
 import org.pcj.Storage;
 
+import algorithms.common.Utils;
 import tools.PcjTools;
 
 
@@ -19,10 +19,6 @@ public class MergeSort extends Storage implements StartPoint{
     public final static int SEND_SIZE = 64_000;
 //    public final static int SEND_SIZE = 3;
     
-    
-    public final static int SIZE = 3 * 16 * 15 * SEND_SIZE;
-//    public final static int SIZE = 8 * SEND_SIZE;
-    
     @Shared
     private int[][] child1;
     
@@ -30,17 +26,8 @@ public class MergeSort extends Storage implements StartPoint{
     private int[][] child2;
     
     private int[] numbers;
-    private Random r;
     
-    
-    
-    public void randomizeNumbers() {
-        for (int i = 0; i < numbers.length; ++i) {
-            numbers[i] = r.nextInt();
-        }
-    }
-    
-    public void calculate() {
+    public void sort() {
         
         Arrays.sort(numbers); //quick sort
         
@@ -65,7 +52,7 @@ public class MergeSort extends Storage implements StartPoint{
         int size1 = child1.length;
         int size2 = child2.length;
 
-        int totalSize = size1 + size2 + (SIZE / (PCJ.threadCount() * SEND_SIZE));
+        int totalSize = size1 + size2 + (Utils.SIZE / (PCJ.threadCount() * SEND_SIZE));
         
         int parent = PcjTools.getParent(PCJ.myId(), PCJ.threadCount());
 
@@ -106,17 +93,16 @@ public class MergeSort extends Storage implements StartPoint{
     
     @Override
     public void main() throws Throwable {
-        numbers = new int[SIZE/PCJ.threadCount()];
-        r = new Random();
+        numbers = new int[Utils.SIZE/PCJ.threadCount()];
         
         long t = 0, min = 0;
         for (int i = 0; i < 10; ++i) {
-            randomizeNumbers();
+            Utils.randomize(numbers);
             PCJ.barrier();
             if (PCJ.myId() == 0)
                 t = System.nanoTime();
             
-            calculate();
+            sort();
             
             if (PCJ.myId() == 0) {
                 t = System.nanoTime() - t;

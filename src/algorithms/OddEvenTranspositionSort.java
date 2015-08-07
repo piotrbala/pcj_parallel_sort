@@ -1,34 +1,38 @@
 package algorithms;
 import java.util.Arrays;
-import java.util.Random;
 
 import org.pcj.PCJ;
 import org.pcj.Shared;
 import org.pcj.StartPoint;
 import org.pcj.Storage;
 
+import algorithms.common.Utils;
+
 
 public class OddEvenTranspositionSort extends Storage implements StartPoint {
-
-    public final static int SIZE = 46_080_000;
-//    public final static int SIZE = 3 * 4;
-    
-    
+  
     @Shared
     private int[] receivedData;
     
     
     private int[] tmp;
     private int[] numbers;
-    private Random r;
     
-    public void randomizeNumbers() {
-        for (int i = 0; i < numbers.length; ++i) {
-            numbers[i] = r.nextInt();
+    private void mergeWithHigher() {
+        int k = 0, l = 0;
+        while (k + l < tmp.length) {
+            tmp[k + l] = numbers[k] <= receivedData[l] ? numbers[k++] : receivedData[l++];
         }
     }
     
-    public void calculate() {
+    private void mergeWithLower() {
+        int k = tmp.length - 1, l = tmp.length - 1;
+        while (k + l >= tmp.length - 1) {
+            tmp[k + l - tmp.length + 1] = numbers[k] > receivedData[l] ? numbers[k--] : receivedData[l--];
+        }
+    }
+    
+    private void sort() {
         int[] PhaseNeighbour = new int[2]; //oddPhase = PhaseNeighbour[1], evenPhase = PhaseNeighbour[0]
         if (PCJ.myId() % 2 == 0) {
             PhaseNeighbour[1] = PCJ.myId() - 1;
@@ -46,13 +50,12 @@ public class OddEvenTranspositionSort extends Storage implements StartPoint {
                 PCJ.put(PhaseNeighbour[i % 2], "receivedData", numbers);
                 PCJ.waitFor("receivedData");
                 
-                //choose 
-                int k = 0, l = 0;
-                while (k + l < tmp.length) {
-                    if (PhaseNeighbour[i % 2] < PCJ.myId())
-                        tmp[k + l] = numbers[k] > receivedData[l] ? numbers[k++] : receivedData[l++];
-                    else
-                        tmp[k + l] = numbers[k] <= receivedData[l] ? numbers[k++] : receivedData[l++];
+                //choose
+                if (PhaseNeighbour[i % 2] < PCJ.myId()) {
+                    mergeWithLower();
+                }
+                else {
+                    mergeWithHigher();
                 }
                 
                 //swap
@@ -66,19 +69,18 @@ public class OddEvenTranspositionSort extends Storage implements StartPoint {
     }
     
     @Override
-    public void main() throws Throwable {
-        numbers = new int[SIZE/PCJ.threadCount()];
-        tmp = new int[SIZE/PCJ.threadCount()];
-        r = new Random();
+    public void main() throws Throwable {      
+        numbers = new int[Utils.SIZE/PCJ.threadCount()];
+        tmp = new int[Utils.SIZE/PCJ.threadCount()];
         
         long t = 0, min = 0;
         for (int i = 0; i < 10; ++i) {
-            randomizeNumbers();
+            Utils.randomize(numbers);
             PCJ.barrier();
             if (PCJ.myId() == 0)
                 t = System.nanoTime();
             
-            calculate();
+            sort();
             
             if (PCJ.myId() == 0) {
                 t = System.nanoTime() - t;

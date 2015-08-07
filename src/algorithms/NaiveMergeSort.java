@@ -1,6 +1,5 @@
 package algorithms;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.function.BiFunction;
 
 import org.pcj.PCJ;
@@ -8,28 +7,19 @@ import org.pcj.Shared;
 import org.pcj.StartPoint;
 import org.pcj.Storage;
 
+import algorithms.common.Utils;
 import tools.PcjTools;
 import tools.Reduce;
 
 
 public class NaiveMergeSort extends Storage implements StartPoint{
-    
-  public final static int SIZE = 3 * 16 * 5 * 100 * 1000;
-//  public final static int SIZE = 3 * 4;
   
   @Shared
   private int[] meta;
   
   private int[] numbers;
-  private Random r;
   
-  public void randomizeNumbers() {
-      for (int i = 0; i < numbers.length; ++i) {
-          numbers[i] = r.nextInt();
-      }
-  }
-  
-  public void calculate() {
+  private void calculate() {
       
       Arrays.sort(numbers); //quick sort
       
@@ -61,12 +51,11 @@ public class NaiveMergeSort extends Storage implements StartPoint{
   
   @Override
   public void main() throws Throwable {
-      numbers = new int[SIZE/PCJ.threadCount()];
-      r = new Random();
+      numbers = new int[Utils.SIZE/PCJ.threadCount()];
 
       long t = 0, min = 0;
       for (int i = 0; i < 10; ++i) {
-          randomizeNumbers();
+          Utils.randomize(numbers);
           PCJ.barrier();
           if (PCJ.myId() == 0)
               t = System.nanoTime();
