@@ -1,0 +1,8 @@
+Pcj OddEvenTranspositionSortWithPartialData
+
+Fri Aug  7 18:02:52 CEST 2015
+(460 800 numbers)
+1 threads x 1 node     29999989 ns
+2 threads x 1 node   5399997947 ns
+4 threads x 1 node  12739995122 ns
+8 threads x 1 node  17119993390 ns
