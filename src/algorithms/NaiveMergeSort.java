@@ -1,3 +1,4 @@
+package algorithms;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.function.BiFunction;
@@ -11,7 +12,7 @@ import tools.PcjTools;
 import tools.Reduce;
 
 
-public class NaiveSortUpdated extends Storage implements StartPoint{
+public class NaiveMergeSort extends Storage implements StartPoint{
     
   public final static int SIZE = 3 * 16 * 5 * 100 * 1000;
 //  public final static int SIZE = 3 * 4;
@@ -62,16 +63,25 @@ public class NaiveSortUpdated extends Storage implements StartPoint{
   public void main() throws Throwable {
       numbers = new int[SIZE/PCJ.threadCount()];
       r = new Random();
-      randomizeNumbers();
-      long t = 0;
-      if (PCJ.myId() == 0)
-          t = System.nanoTime();
-      
-      calculate();
-      
+
+      long t = 0, min = 0;
+      for (int i = 0; i < 10; ++i) {
+          randomizeNumbers();
+          PCJ.barrier();
+          if (PCJ.myId() == 0)
+              t = System.nanoTime();
+          
+          calculate();
+          
+          if (PCJ.myId() == 0) {
+              t = System.nanoTime() - t;
+              if (min > t || min == 0) {
+                  min = t;
+              }
+          }
+      }
       if (PCJ.myId() == 0) {
-          t = System.nanoTime() - t;
-          System.out.println(t + " ns");
+          System.out.println(min + " ns");
       }
   }
 

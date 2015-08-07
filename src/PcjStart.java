@@ -3,6 +3,9 @@ import java.util.Arrays;
 
 import org.pcj.PCJ;
 
+import algorithms.NaiveMergeSort;
+import algorithms.OddEvenTranspositionSort;
+
 
 public class PcjStart {
     
@@ -18,9 +21,9 @@ public class PcjStart {
     }
     
     public static void main(String[] args) {
-//        for (int i = 0; i < 10; ++i)
-//            PCJ.deploy(MergeSort.class, MergeSort.class, "nodes.txt");
+        //it will look for file "nodes.file" and read nodes configuration from there
+        PCJ.start(NaiveMergeSort.class, NaiveMergeSort.class);
         
-        PCJ.deploy(MergeSort.class, MergeSort.class, nodes(4));
+//        PCJ.deploy(NaiveMergeSort.class, NaiveMergeSort.class, nodes(4));
     }
 }

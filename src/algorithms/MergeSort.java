@@ -1,3 +1,4 @@
+package algorithms;
 import iterators.IntArrayIterator;
 import iterators.SimplifiedArrayIterator;
 import iterators.WaitingArrayIterator;

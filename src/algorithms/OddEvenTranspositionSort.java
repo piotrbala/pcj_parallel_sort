@@ -1,3 +1,4 @@
+package algorithms;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -9,8 +10,8 @@ import org.pcj.Storage;
 
 public class OddEvenTranspositionSort extends Storage implements StartPoint {
 
-//    public final static int SIZE = 3 * 16 * 5 * 100 * 1000;
-    public final static int SIZE = 3 * 4;
+    public final static int SIZE = 46_080_000;
+//    public final static int SIZE = 3 * 4;
     
     
     @Shared
