@@ -1,15 +1,25 @@
 package tools;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.pcj.PCJ;
+import org.pcj.Storage;
+import org.pcj.internal.PcjThread;
 
 import tools.Function;
 
 public class PcjTools {
 
+    
+    private PcjTools() {
+        throw new Error("Cannot instantiate PcjTools");
+    }
+    
     /**
      * It returns class that can reduce data in threads. Complete result will be present in thread with id 0.
      * It has to be used in all threads.
@@ -83,6 +93,40 @@ public class PcjTools {
         for(int i : children) {
             PCJ.barrier(threads[children[i]]);
         }
+    }
+    
+    /**
+     * Nonblocking operation that allows checking changes count of given variable since last monitor
+     * or waitFor. Variable has to be @Shared
+     * @return changes count
+     */
+    public static int getCount(String variable) {
+        int result = -1;
+        try {
+            Field f = Storage.class.getDeclaredField("monitorFields");
+            f.setAccessible(true);
+            @SuppressWarnings("rawtypes")
+            Map map = (Map) f.get(PcjThread.threadStorage());
+            try {
+                result = ((AtomicInteger) map.get(variable)).get();
+            }
+            catch (ClassCastException e) {
+                result = (Integer) map.get(variable);
+            }
+            
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+ 
+    /**
+     * Nonblocking operation that allows checking whether given variable was changed since last monitor
+     * or waitFor. Variable has to be @Shared
+     * @return true iff variable was changed
+     */
+    public static boolean isChanged(String variable) {
+        return getCount(variable) > 0;
     }
     
     /**
