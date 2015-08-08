@@ -7,3 +7,12 @@ Fri Aug  7 14:10:03 CEST 2015
 4 threads x 1 node   5989993836 ns
 8 threads x 1 node   4449995424 ns
 12 threads x 1 node  3919995971 ns
+
+
+Sat Aug  8 09:06:14 CEST 2015
+(46 080 000 numbers)
+1 threads x 4 nodes   2646709201 ns
+2 threads x 4 nodes   1908790275 ns
+4 threads x 4 nodes   1557828835 ns
+8 threads x 4 nodes   1328853992 ns
+12 threads x 4 nodes  1368849597 ns
