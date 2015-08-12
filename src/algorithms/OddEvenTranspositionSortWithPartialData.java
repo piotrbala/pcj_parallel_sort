@@ -1,5 +1,11 @@
 package algorithms;
 
+import iterators.extendedIterators.Direction;
+import iterators.extendedIterators.Comparison;
+import iterators.extendedIterators.ExtendedIntIterator;
+import iterators.extendedIterators.GettingIterator;
+import iterators.extendedIterators.NormalIterator;
+
 import java.util.Arrays;
 
 import org.pcj.PCJ;
@@ -14,40 +20,38 @@ import algorithms.common.Utils;
  */
 public class OddEvenTranspositionSortWithPartialData extends Storage implements StartPoint {
   
+    public final int SEND_SIZE = 64_000;
+    
     @Shared
-    private int[] numbers;
+    private int[][] numbers;
   
   
-    private int[] tmp;
+    private int[][] tmp;
     private int myId, threadCount;
 
-    private void mergeWithHigher(int neighbour) {
-        //we are only interested in small ones
-        int k = 0, l = 0;
-        while (k + l < tmp.length) {
-            int number = PCJ.get(neighbour, "numbers", l);
-            if (numbers[k] < number) {
-                tmp[k + l] = numbers[k++];
-            }
-            else {
-                tmp[k + l] = number;
-                l++;
-            }
-        }
+    /**
+     * Sorts numbers.
+     */
+    private void localSort() {
+        for (int[] a : numbers)
+            Arrays.sort(a);
+        //TODO merge
     }
     
-    private void mergeWithLower(int neighbour) {
-        //we are only interested in big ones
-        int k = numbers.length - 1, l = numbers.length - 1;
-        while (k + l >= tmp.length - 1) {
-            int number = PCJ.get(neighbour, "numbers", k);
-            if (number < numbers[l]) {
-                tmp[k + l - tmp.length + 1] = numbers[l--];
-            }
-            else {
-                tmp[k + l - tmp.length + 1] = number;
-                k--;
-            }
+    /**
+     * Merges two arrays represented by iterators into result.
+     */
+    private void merge(ExtendedIntIterator it1, ExtendedIntIterator it2, ExtendedIntIterator result) {
+        //Waiting for data and pointing first number
+        it1.move();
+        it2.move();
+        result.move();
+        ExtendedIntIterator c;
+        while (!result.isEnd()) {
+            c = it1.compare(it2);
+            result.set(c.get());
+            result.move();
+            c.move();
         }
     }
     
@@ -62,24 +66,35 @@ public class OddEvenTranspositionSortWithPartialData extends Storage implements 
             PhaseNeighbour[0] = myId - 1;
         }
   
-        Arrays.sort(numbers);
+        localSort();
   
         for (int phase = 1; phase < threadCount + 1; ++phase) {
             if (PhaseNeighbour[phase % 2] < threadCount && PhaseNeighbour[phase % 2] >= 0) {
                 //ensure that neighbour finished previous calculations
                 PCJ.barrier(PhaseNeighbour[phase % 2]);
 
+                ExtendedIntIterator r, i1, i2;
                 //we try to avoid sending too much data
-                if (PhaseNeighbour[phase % 2] < myId)
-                    mergeWithLower(PhaseNeighbour[phase % 2]);
-                else
-                    mergeWithHigher(PhaseNeighbour[phase % 2]);
+                if (PhaseNeighbour[phase % 2] < myId){
+                    r = new NormalIterator(Direction.DESCENDING, Comparison.GREATER, tmp, SEND_SIZE);
+                    i1 = new NormalIterator(Direction.DESCENDING, Comparison.GREATER, numbers, SEND_SIZE);
+                    i2 = new GettingIterator(Direction.DESCENDING, Comparison.GREATER, "numbers",
+                            PhaseNeighbour[phase % 2], numbers.length, SEND_SIZE);
+                }
+                else {
+                    r = new NormalIterator(Direction.ASCENDING, Comparison.LESSER, tmp, SEND_SIZE);
+                    i1 = new NormalIterator(Direction.ASCENDING, Comparison.LESSER, numbers, SEND_SIZE);
+                    i2 = new GettingIterator(Direction.ASCENDING, Comparison.LESSER, "numbers",
+                            PhaseNeighbour[phase % 2], numbers.length, SEND_SIZE);
+                }
+                
+                merge(i1, i2, r);
   
                 //so we can securely cover previous data
                 PCJ.barrier(PhaseNeighbour[phase % 2]);
   
                 //swap
-                int[] s = tmp;
+                int[][] s = tmp;
                 tmp = numbers;
                 numbers = s;
             }
@@ -91,13 +106,14 @@ public class OddEvenTranspositionSortWithPartialData extends Storage implements 
         myId = PCJ.myId();
         threadCount = PCJ.threadCount();
       
-        numbers = new int[Utils.SIZE/threadCount];
-        tmp = new int[Utils.SIZE/threadCount];
+        numbers = new int[Utils.SIZE/threadCount][SEND_SIZE];
+        tmp = new int[Utils.SIZE/threadCount][SEND_SIZE];
       
       
         long t = 0, min = 0;
         for (int i = 0; i < 10; ++i) {
-            Utils.randomize(numbers);
+            for (int[] a : numbers)
+                Utils.randomize(a);
             PCJ.barrier();
             if (myId == 0)
                 t = System.nanoTime();
