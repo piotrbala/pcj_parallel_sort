@@ -48,7 +48,7 @@ public class NormalIterator extends ExtendedIntIterator {
             return;
         switch (direction) {
         case ASCENDING:
-            outer += inner / size;
+            outer += (inner + 1) / size;
             inner = (inner + 1) % size;
             isEnd = outer >= array.length;
             break;

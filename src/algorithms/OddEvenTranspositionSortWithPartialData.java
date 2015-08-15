@@ -21,7 +21,7 @@ import algorithms.common.Utils;
 public class OddEvenTranspositionSortWithPartialData extends Storage implements StartPoint {
   
     public final int SEND_SIZE = 64_000;
-    
+//    public final int SEND_SIZE = 2;
     @Shared
     private int[][] numbers;
   
@@ -35,7 +35,53 @@ public class OddEvenTranspositionSortWithPartialData extends Storage implements 
     private void localSort() {
         for (int[] a : numbers)
             Arrays.sort(a);
-        //TODO merge
+        
+        int step = 1, temporary; //length of array merged
+        while (step < numbers.length) {
+            //first, second - currently merged parts
+            int firstStart = 0, secondStart = step, tmpOuter = 0, tmpInner = 0;
+            while (secondStart < numbers.length) {
+                int firstOuter = firstStart, firstInner = 0;
+                int secondOuter = secondStart, secondInner = 0;
+                while (true) {
+                    if (firstOuter < secondStart && (
+                            secondOuter >= numbers.length || secondOuter >= (secondOuter + 2 * step)
+                            || numbers[firstOuter][firstInner] < numbers[secondOuter][secondInner]
+                            )) {
+                        temporary = numbers[firstOuter][firstInner];
+                        firstOuter += (firstInner + 1) / SEND_SIZE;
+                        firstInner = (firstInner + 1) % SEND_SIZE;
+                    }
+                    else {
+                        temporary = numbers[secondOuter][secondInner];
+                        secondOuter += (secondInner + 1) / SEND_SIZE;
+                        secondInner = (secondInner + 1) % SEND_SIZE;
+                    }
+                    tmp[tmpOuter][tmpInner] = temporary;
+                    tmpOuter += (tmpInner + 1) / SEND_SIZE;
+                    tmpInner = (tmpInner + 1) % SEND_SIZE;
+                    
+                    if ((secondOuter >= numbers.length || secondOuter >= (secondStart + 2 * step))
+                            && firstOuter >= secondStart)
+                            break;
+                }
+                
+                firstStart = secondStart + step;
+                secondStart = firstStart + step;
+            }
+            step *= 2;
+            //swap
+            int[][] s = tmp;
+            tmp = numbers;
+            numbers = s;
+        }
+        /*
+        PCJ.log("Local sort done");
+        String string = "";
+        for (int[] a : numbers)
+            string += Arrays.toString(a);
+        PCJ.log(string);
+        */
     }
     
     /**
@@ -106,8 +152,8 @@ public class OddEvenTranspositionSortWithPartialData extends Storage implements 
         myId = PCJ.myId();
         threadCount = PCJ.threadCount();
       
-        numbers = new int[Utils.SIZE/threadCount][SEND_SIZE];
-        tmp = new int[Utils.SIZE/threadCount][SEND_SIZE];
+        numbers = new int[Utils.SIZE/(threadCount * SEND_SIZE)][SEND_SIZE];
+        tmp = new int[Utils.SIZE/(threadCount * SEND_SIZE)][SEND_SIZE];
       
       
         long t = 0, min = 0;
@@ -130,6 +176,11 @@ public class OddEvenTranspositionSortWithPartialData extends Storage implements 
         if (myId == 0) {
             System.out.println(min + " ns");
         }
-//        PCJ.log(Arrays.toString(numbers));
+        /*
+        String string = "";
+        for (int[] a : numbers)
+            string += Arrays.toString(a);
+        PCJ.log(string);
+        */
     }
 }

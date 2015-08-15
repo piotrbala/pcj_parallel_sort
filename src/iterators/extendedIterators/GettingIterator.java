@@ -62,13 +62,13 @@ public class GettingIterator extends ExtendedIntIterator {
             return;
         switch (direction) {
         case ASCENDING:
-            outer += inner / size;
+            outer += (inner + 1) / size;
             inner = (inner + 1) % size;
             isEnd = outer >= array.length;
             if (!isEnd && outer > downloaded) {
                 //taking care of new data
                 for (int i = 0; i < (BUF_SIZE + 1 - orders.size()); ++i) {
-                    if (++lastOrder > array.length)
+                    if (++lastOrder >= array.length)
                         break;
                     orders.addLast(PCJ.getFutureObject(node, field, lastOrder));
                 }
@@ -80,7 +80,7 @@ public class GettingIterator extends ExtendedIntIterator {
             outer -= (size - inner) / size;
             inner = (inner - 1 + size) % size;
             isEnd = outer < 0;
-            if (!isEnd && outer > downloaded) {
+            if (!isEnd && outer < downloaded) {
                 //taking care of new data
                 for (int i = 0; i < (BUF_SIZE + 1 - orders.size()); ++i) {
                     if (--lastOrder < 0)
@@ -88,6 +88,9 @@ public class GettingIterator extends ExtendedIntIterator {
                     orders.addLast(PCJ.getFutureObject(node, field, lastOrder));
                 }
                 array[outer] = orders.pollFirst().get();
+                if (array[outer] == null) {
+                    PCJ.log("GOT NULL");
+                }
                 --downloaded;
             }
             break;
