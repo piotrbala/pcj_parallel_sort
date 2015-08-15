@@ -21,7 +21,7 @@ import algorithms.common.Utils;
 public class OddEvenTranspositionSortWithPartialData extends Storage implements StartPoint {
   
     public final int SEND_SIZE = 64_000;
-//    public final int SEND_SIZE = 2;
+//    public final int SEND_SIZE = 1;
     @Shared
     private int[][] numbers;
   
@@ -44,8 +44,9 @@ public class OddEvenTranspositionSortWithPartialData extends Storage implements 
                 int firstOuter = firstStart, firstInner = 0;
                 int secondOuter = secondStart, secondInner = 0;
                 while (true) {
+                   
                     if (firstOuter < secondStart && (
-                            secondOuter >= numbers.length || secondOuter >= (secondOuter + 2 * step)
+                            secondOuter >= numbers.length || secondOuter >= (secondStart + step)
                             || numbers[firstOuter][firstInner] < numbers[secondOuter][secondInner]
                             )) {
                         temporary = numbers[firstOuter][firstInner];
@@ -61,7 +62,7 @@ public class OddEvenTranspositionSortWithPartialData extends Storage implements 
                     tmpOuter += (tmpInner + 1) / SEND_SIZE;
                     tmpInner = (tmpInner + 1) % SEND_SIZE;
                     
-                    if ((secondOuter >= numbers.length || secondOuter >= (secondStart + 2 * step))
+                    if ((secondOuter >= numbers.length || secondOuter >= (secondStart + step))
                             && firstOuter >= secondStart)
                             break;
                 }
@@ -165,7 +166,7 @@ public class OddEvenTranspositionSortWithPartialData extends Storage implements 
                 t = System.nanoTime();
           
             sort();
-          
+
             if (myId == 0) {
                 t = System.nanoTime() - t;
                 if (min > t || min == 0) {
