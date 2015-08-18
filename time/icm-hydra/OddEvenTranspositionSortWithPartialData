@@ -6,3 +6,14 @@ Fri Aug  7 18:02:52 CEST 2015
 2 threads x 1 node   5399997947 ns
 4 threads x 1 node  12739995122 ns
 8 threads x 1 node  17119993390 ns
+
+
+Pcj OddEvenTranspositionSortWithPartialData (After Update)
+
+Mon Aug 17 14:06:24 CEST 2015 (results may be broken due to lack of electricity)
+(46 080 000 numbers)
+1 threads x 1 node   9169980960 ns
+2 threads x 1 node   4639990122 ns
+4 threads x 1 node   3409992667 ns
+8 threads x 1 node   2519994505 ns
+12 threads x 1 node  2499994502 ns
